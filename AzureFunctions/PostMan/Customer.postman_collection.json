@@ -1,0 +1,43 @@
+{
+	"info": {
+		"_postman_id": "af0ea066-7126-e589-7c1b-32724764c5f8",
+		"name": "Customer",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Customers",
+			"description": "",
+			"item": []
+		},
+		{
+			"name": "AzureFuncApp",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{ name:\"jose2\"}"
+				},
+				"url": {
+					"raw": "http://localhost:7071/api/Function1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7071",
+					"path": [
+						"api",
+						"Function1"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
