@@ -16,6 +16,11 @@ namespace AzureFunctions.RestApi
     {
         public const string ROUTE = "todo";
         public const string TEST_RESET_ROUTE = "test/reset";
+        public const AuthorizationLevel AUTH_LEVEL = AuthorizationLevel.Anonymous;
+        public const string METHOD_GET = "GET";
+        public const string METHOD_POST = "POST";
+        public const string METHOD_PUT = "PUT";
+        public const string METHOD_DELETE = "DELETE";
 
         private static IStore _store = null;
         private static IStore Store
@@ -37,7 +42,7 @@ namespace AzureFunctions.RestApi
         
         [FunctionName("GetTestReset")]
         public static IActionResult GetTestRest(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = TEST_RESET_ROUTE)]
+            [HttpTrigger(AUTH_LEVEL, METHOD_GET, Route = TEST_RESET_ROUTE)]
             HttpRequest req, 
             TraceWriter log)
         {
@@ -49,7 +54,7 @@ namespace AzureFunctions.RestApi
 
         [FunctionName("CreateItem")]
         public static async Task<IActionResult> CreateItem(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = ROUTE)]
+            [HttpTrigger(AUTH_LEVEL, METHOD_POST, Route = ROUTE)]
             HttpRequest req, 
             TraceWriter log)
         {
@@ -63,7 +68,7 @@ namespace AzureFunctions.RestApi
 
         [FunctionName("GetItems")]
         public static IActionResult GetItems(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = ROUTE)]
+            [HttpTrigger(AUTH_LEVEL, METHOD_GET, Route = ROUTE)]
             HttpRequest req, 
             TraceWriter log)
         {
@@ -74,7 +79,7 @@ namespace AzureFunctions.RestApi
 
         [FunctionName("GetItemById")]
         public static IActionResult GetItemById(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = ROUTE+"/{id}")]
+            [HttpTrigger(AUTH_LEVEL, METHOD_GET, Route = ROUTE+"/{id}")]
             HttpRequest req, 
             TraceWriter log, 
             string id)
@@ -90,7 +95,7 @@ namespace AzureFunctions.RestApi
 
         [FunctionName("UpdateItem")]
         public static async Task<IActionResult> UpdateItem(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = ROUTE+"/{id}")]
+            [HttpTrigger(AUTH_LEVEL, METHOD_PUT, Route = ROUTE+"/{id}")]
             HttpRequest req,
             TraceWriter log, 
             string id)
@@ -109,7 +114,7 @@ namespace AzureFunctions.RestApi
 
         [FunctionName("DeleteItem")]
         public static IActionResult DeleteItem(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = ROUTE + "/{id}")]
+            [HttpTrigger(AUTH_LEVEL, METHOD_DELETE, Route = ROUTE + "/{id}")]
             HttpRequest req,
             TraceWriter log, 
             string id)
