@@ -1,7 +1,10 @@
-﻿
+﻿# ------------------------------------------------------------------------------------------
+# 
+# PowerShell unit tests for REST API written with Azure Function
+#
+# ------------------------------------------------------------------------------------------
 Import-Module ".\curl.psm1" -Force
-
-
+Import-Module ".\assert.psm1" -Force
 
 function createNewItem($url) {
 
@@ -11,6 +14,7 @@ function createNewItem($url) {
     Write-Host "New item created $($result.id)" 
     return $result
 }
+
 function AssertItem($item, $result) {
 
     Assert-AreEqual $item.id $result.id "Verify array length" | Out-Null
@@ -19,14 +23,12 @@ function AssertItem($item, $result) {
 }
 
 cls
-
+Assert-Verbose $true
 
 $BaseUrl = "http://localhost:7071/api"
-$url = "$BaseUrl/test/reset"
-$result = apiGet $url
-
-Assert-Verbose $true
-Assert-AreEqual $true $result | Out-Null
+$url     = "$BaseUrl/test/reset"
+# $result  = apiGet $url
+Assert-AreEqual $true (apiGet $url) | Out-Null
 
 $url = "$BaseUrl/todo"
 $result = apiGet $url
