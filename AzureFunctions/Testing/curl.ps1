@@ -26,8 +26,9 @@ cls
 Assert-Verbose $true
 
 $BaseUrl = "http://localhost:7071/api"
+$BaseUrl = "http://azurefunctionsfred.azurewebsites.net/api"
+
 $url     = "$BaseUrl/test/reset"
-# $result  = apiGet $url
 Assert-AreEqual $true (apiGet $url) | Out-Null
 
 $url = "$BaseUrl/todo"

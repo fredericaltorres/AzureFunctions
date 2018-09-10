@@ -34,7 +34,6 @@ namespace AzureFunctions.RestApi
             var input = JsonConvert.DeserializeObject<T>(requestBody);
             return input;
         }
-
         
         [FunctionName("GetTestReset")]
         public static IActionResult GetTestRest(
@@ -43,6 +42,7 @@ namespace AzureFunctions.RestApi
             TraceWriter log)
         {
             log.Info("test reset");
+
             Store.Clear();
             return new OkResult();
         }
@@ -68,6 +68,7 @@ namespace AzureFunctions.RestApi
             TraceWriter log)
         {
             log.Info("Getting todo list items");
+
             return new OkObjectResult(Store.GetItems());
         }
 
@@ -78,6 +79,8 @@ namespace AzureFunctions.RestApi
             TraceWriter log, 
             string id)
         {
+            log.Info($"GetItemById {id}");
+
             var todo = Store.GetItem(id);
             if (todo == null)
                 return new NotFoundResult();
