@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ServerlessFuncs
+namespace AzureFunctions
 {
     public class Todo
     {
