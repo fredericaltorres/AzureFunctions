@@ -12,17 +12,37 @@ using AzureFunctions;
 
 namespace AzureFunctions.RestApi
 {
-    public static class TodoApi
+    public class RestApiBaseClass
     {
-        public const string ROUTE = "todo";
-        public const string TEST_RESET_ROUTE = "test/reset";
-        public const AuthorizationLevel AUTH_LEVEL = AuthorizationLevel.Anonymous;
-        public const string METHOD_GET = "GET";
-        public const string METHOD_POST = "POST";
-        public const string METHOD_PUT = "PUT";
+        public const string METHOD_GET    = "GET";
+        public const string METHOD_POST   = "POST";
+        public const string METHOD_PUT    = "PUT";
         public const string METHOD_DELETE = "DELETE";
 
+        public const string TEST_RESET_ROUTE = "test/reset";
+           
+        internal static async Task<T> Deserialize<T>(HttpRequest req)
+        {
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            var input = JsonConvert.DeserializeObject<T>(requestBody);
+            return input;
+        }
+    }
+    public class TodoRestApi : RestApiBaseClass
+    {
+        /// <summary>
+        /// Authorization Level
+        /// </summary>
+        public const AuthorizationLevel AUTH_LEVEL = AuthorizationLevel.Anonymous;
+        /// <summary>
+        /// Api url keyword
+        /// </summary>
+        public const string ROUTE = "todo";
+        
         private static IStore _store = null;
+        /// <summary>
+        /// 
+        /// </summary>
         private static IStore Store
         {
             get
@@ -32,13 +52,7 @@ namespace AzureFunctions.RestApi
                 return _store;
             }
         }
-        
-        private static async Task<T> Deserialize<T>(HttpRequest req)
-        {
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var input = JsonConvert.DeserializeObject<T>(requestBody);
-            return input;
-        }
+     
         
         [FunctionName("GetTestReset")]
         public static IActionResult GetTestRest(
@@ -47,7 +61,6 @@ namespace AzureFunctions.RestApi
             TraceWriter log)
         {
             log.Info("test reset");
-
             Store.Clear();
             return new OkResult();
         }
@@ -59,11 +72,10 @@ namespace AzureFunctions.RestApi
             TraceWriter log)
         {
             log.Info("Creating a new item");
-
-            var input = await Deserialize<TodoUpdateModel>(req);
-            var todo = new Todo() { TaskDescription = input.TaskDescription };
-            Store.Add(todo);
-            return new OkObjectResult(todo);
+            var inputModel = await Deserialize<TodoUpdateModel>(req);
+            var item = new Todo() { TaskDescription = inputModel.TaskDescription };
+            Store.Add(item);
+            return new OkObjectResult(item);
         }
 
         [FunctionName("GetItems")]
@@ -73,7 +85,6 @@ namespace AzureFunctions.RestApi
             TraceWriter log)
         {
             log.Info("Getting todo list items");
-
             return new OkObjectResult(Store.GetItems());
         }
 
@@ -85,12 +96,10 @@ namespace AzureFunctions.RestApi
             string id)
         {
             log.Info($"GetItemById {id}");
-
-            var todo = Store.GetItem(id);
-            if (todo == null)
+            var item = Store.GetItem(id);
+            if (item == null)
                 return new NotFoundResult();
-
-            return new OkObjectResult(todo);
+            return new OkObjectResult(item);
         }
 
         [FunctionName("UpdateItem")]
@@ -100,16 +109,16 @@ namespace AzureFunctions.RestApi
             TraceWriter log, 
             string id)
         {
-            var todo = Store.GetItem(id);
-            if (todo == null)
+            var item = Store.GetItem(id);
+            if (item == null)
                 return new NotFoundResult();
 
-            var updated = await Deserialize<TodoUpdateModel>(req);
-            todo.IsCompleted = updated.IsCompleted;
-            if (!string.IsNullOrEmpty(updated.TaskDescription))
-                todo.TaskDescription = updated.TaskDescription;
+            var updatedItem = await Deserialize<TodoUpdateModel>(req);
+            item.IsCompleted = updatedItem.IsCompleted;
+            if (!string.IsNullOrEmpty(updatedItem.TaskDescription))
+                item.TaskDescription = updatedItem.TaskDescription;
 
-            return new OkObjectResult(todo);
+            return new OkObjectResult(item);
         }
 
         [FunctionName("DeleteItem")]
@@ -119,11 +128,11 @@ namespace AzureFunctions.RestApi
             TraceWriter log, 
             string id)
         {
-            var todo = Store.GetItem(id);
-            if (todo == null)
+            var item = Store.GetItem(id);
+            if (item == null)
                 return new NotFoundResult();
 
-            Store.Remove(todo);
+            Store.Remove(item);
             return new OkResult();
         }
     }
