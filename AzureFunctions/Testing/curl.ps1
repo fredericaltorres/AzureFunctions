@@ -23,13 +23,17 @@ function AssertItem($item, $result) {
 }
 
 cls
+$AZURE_MODE = $false
+
 Assert-Verbose $true
 
 $BaseUrl = "http://localhost:7071/api"
-$BaseUrl = "http://azurefunctionsfred.azurewebsites.net/api"
+if($AZURE_MODE) {
+    $BaseUrl = "http://azurefunctionsfred.azurewebsites.net/api"
+}
 
 $url     = "$BaseUrl/test/reset"
-Assert-AreEqual $true (apiGet $url) | Out-Null
+Assert-IsTrue (apiGet $url) | Out-Null
 
 $url = "$BaseUrl/todo"
 $result = apiGet $url
@@ -59,3 +63,9 @@ $result = apiPut "$url/$($item2.id)" (ConvertTo-Json $item2)
 
 $result = apiGet "$url/$($item2.id)"
 AssertItem $item2 $result
+
+# DeleteItem
+$result = apiDelete "$url/$($item2.id)"
+$result = apiGet $url
+Assert-IsTrue $result | Out-Null
+Assert-AreEqual 1 $result.Length "Verify array length" | Out-Null

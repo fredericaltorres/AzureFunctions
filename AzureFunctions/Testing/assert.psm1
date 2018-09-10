@@ -32,5 +32,9 @@ function Assert-AreEqual ($val1, $val2, $message = $null) {
     }
 }
 
-Export-ModuleMember -Function Assert-AreEqual, Assert-Verbose
+function Assert-IsTrue ($val1, $message = $null) {
+    return Assert-AreEqual $true $val1 $message
+}
+
+Export-ModuleMember -Function Assert-AreEqual, Assert-Verbose, Assert-IsTrue
 

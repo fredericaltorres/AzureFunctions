@@ -55,7 +55,7 @@ namespace AzureFunctions.RestApi
         {
             log.Info("Creating a new item");
 
-            var input = await Deserialize<TodoCreateModel>(req);
+            var input = await Deserialize<TodoUpdateModel>(req);
             var todo = new Todo() { TaskDescription = input.TaskDescription };
             Store.Add(todo);
             return new OkObjectResult(todo);

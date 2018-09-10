@@ -48,9 +48,15 @@ function apiPost($url, $data, $method = "Post") {
     $result = curl -Uri $url -Method $method -Body $data
     write-host "status:$($result.StatusCode)"
     if(isHttpOk($result.StatusCode)) {
-        $json = $result.Content
-        $psO = $json | ConvertFrom-Json # Parse JSON
-        return $psO
+        # $result.Content is a byte array
+        if($result.Content.Length -eq 0) {
+            return $true # No HTTP content
+        }
+        else {
+            $json = $result.Content
+            $psO = $json | ConvertFrom-Json # Parse JSON
+            return $psO
+        }
     }
     throw "http $method failed statusCode:$($result.StatusCode), url:$url"
 }

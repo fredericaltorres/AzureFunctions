@@ -10,3 +10,10 @@ Based on Plural Sight course
 
 # GitHub SSH Key
 
+# Configuration
+
+Azure Function App
+
+	Application Settings
+
+		FUNCTIONS_EXTENSION_VERSION=beta
