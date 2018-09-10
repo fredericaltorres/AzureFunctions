@@ -12,23 +12,31 @@ function isHttpOk([int]$statusCode) {
 }
 function apiGet($url) {
 
-    write-host "get $url"
-    $result = curl -Uri $url -Method Get
+    $method = "Get"
+    write-host "$method $url " -NoNewline
+    $result = curl -Uri $url -Method $method
     if($result -eq $null) {
         throw "http call failed, server unavailable, url:$url"
     }
 
     write-host "status:$($result.StatusCode)-$($result.StatusDescription)"
+
     if(isHttpOk($result.StatusCode)) {
+
         $json = $result.Content
+
         if($json.Length -gt 0) { # HTTP content
+
             $psO = $json | ConvertFrom-Json
+
             if($psO.Length -eq 1) { # The array of 1 was converted into one object
                 return ,$psO
             }
-            return $psO
+            else {
+                return $psO # get item by id will return an instance get items will return an array
+            }
         }
-        else {  # No HTTP content
+        else { # No HTTP content
             return $true
         }
     }
@@ -36,7 +44,7 @@ function apiGet($url) {
 }
 function apiPost($url, $data, $method = "Post") {
 
-    write-host "$method $url"
+    write-host "$method $url $data "  -NoNewline
     $result = curl -Uri $url -Method $method -Body $data
     write-host "status:$($result.StatusCode)"
     if(isHttpOk($result.StatusCode)) {
@@ -48,11 +56,11 @@ function apiPost($url, $data, $method = "Post") {
 }
 function apiPut($url, $data, $method = "Put") {
 
-    return apiPost($url, $data, $method)
+    return apiPost $url $data $method
 }
 function apiDelete($url, $data, $method = "Delete") {
 
-    return apiPost($url, $data, $method)
+    return apiPost $url $data $method
 }
 
 
@@ -76,7 +84,7 @@ function Assert-AreEqual ($val1, $val2, $message = $null) {
         $message = $preMessage + $postMessage
     }
     else {
-        $message = $preMessage + $message +'`r`n'+ $postMessage 
+        $message = $preMessage + $message +' - '+ $postMessage 
 
     }
     if($val1 -eq $val2) {
