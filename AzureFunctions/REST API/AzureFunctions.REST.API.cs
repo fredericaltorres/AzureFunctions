@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using AzureFunctions;
+using Microsoft.WindowsAzure.Storage.Table;
+using Microsoft.WindowsAzure.Storage;
+
 
 namespace AzureFunctions.RestApi
 {
@@ -38,30 +41,19 @@ namespace AzureFunctions.RestApi
         /// Api url keyword
         /// </summary>
         public const string ROUTE = "todo";
-        
-        private static IStore _store = null;
-        /// <summary>
-        /// 
-        /// </summary>
-        private static IStore Store
-        {
-            get
-            {
-                if(_store == null)
-                    _store = new InMemoryStore();
-                return _store;
-            }
-        }
+
+        public const string AZURE_TABLE = "todos";
+        public const string AZURE_TABLE_PARTITION_KEY = "TODO";
+        public const string AZURE_TABLE_CONNECTION_STRING = "AzureWebJobsStorage";
+      
      
-        
         [FunctionName("GetTestReset")]
         public static IActionResult GetTestRest(
             [HttpTrigger(AUTH_LEVEL, METHOD_GET, Route = TEST_RESET_ROUTE)]
             HttpRequest req, 
             TraceWriter log)
         {
-            log.Info("test reset");
-            Store.Clear();
+            log.Info("test reset");            
             return new OkResult();
         }
 
@@ -69,70 +61,86 @@ namespace AzureFunctions.RestApi
         public static async Task<IActionResult> CreateItem(
             [HttpTrigger(AUTH_LEVEL, METHOD_POST, Route = ROUTE)]
             HttpRequest req, 
+            [Table(AZURE_TABLE, Connection = AZURE_TABLE_CONNECTION_STRING)] IAsyncCollector<TodoTableEntity> todoTable,
             TraceWriter log)
         {
             log.Info("Creating a new item");
             var inputModel = await Deserialize<TodoUpdateModel>(req);
             var item = new Todo() { TaskDescription = inputModel.TaskDescription };
-            Store.Add(item);
+            var r = todoTable.AddAsync(item.ToTableEntity()).GetAwaiter().IsCompleted;
             return new OkObjectResult(item);
         }
 
         [FunctionName("GetItems")]
-        public static IActionResult GetItems(
+        public static async Task<IActionResult> GetItems(
             [HttpTrigger(AUTH_LEVEL, METHOD_GET, Route = ROUTE)]
             HttpRequest req, 
+            [Table(AZURE_TABLE, Connection = AZURE_TABLE_CONNECTION_STRING)] CloudTable todoTable,
             TraceWriter log)
         {
             log.Info("Getting todo list items");
-            return new OkObjectResult(Store.GetItems());
+            var query = new TableQuery<TodoTableEntity>();
+            var segment = await todoTable.ExecuteQuerySegmentedAsync(query, null);
+            return new OkObjectResult(segment.Select(Mappings.ToTodo));
         }
 
         [FunctionName("GetItemById")]
         public static IActionResult GetItemById(
-            [HttpTrigger(AUTH_LEVEL, METHOD_GET, Route = ROUTE+"/{id}")]
-            HttpRequest req, 
+            [HttpTrigger(AUTH_LEVEL, METHOD_GET, Route = ROUTE+"/{id}")]HttpRequest req, 
+            [Table(AZURE_TABLE, AZURE_TABLE_PARTITION_KEY, "{id}", Connection = AZURE_TABLE_CONNECTION_STRING)] TodoTableEntity todo,
             TraceWriter log, 
             string id)
         {
-            log.Info($"GetItemById {id}");
-            var item = Store.GetItem(id);
-            if (item == null)
+            log.Info("Getting todo item by id");
+            if (todo == null) // << The todo is loaded automatically
+            {
+                log.Info($"Item {id} not found");
                 return new NotFoundResult();
-            return new OkObjectResult(item);
+            }
+            return new OkObjectResult(todo.ToTodo());
         }
 
         [FunctionName("UpdateItem")]
         public static async Task<IActionResult> UpdateItem(
-            [HttpTrigger(AUTH_LEVEL, METHOD_PUT, Route = ROUTE+"/{id}")]
-            HttpRequest req,
-            TraceWriter log, 
-            string id)
+            [HttpTrigger(AUTH_LEVEL, METHOD_PUT, Route = ROUTE+"/{id}")]HttpRequest req, 
+            [Table(AZURE_TABLE, Connection = AZURE_TABLE_CONNECTION_STRING)] CloudTable todoTable,
+            TraceWriter log, string id)
         {
-            var item = Store.GetItem(id);
-            if (item == null)
+            var updatedItem = await Deserialize<TodoUpdateModel>(req);
+            //string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            //var updated = JsonConvert.DeserializeObject<TodoUpdateModel>(requestBody);
+            var findOperation = TableOperation.Retrieve<TodoTableEntity>(AZURE_TABLE_PARTITION_KEY, id);
+            var findResult = await todoTable.ExecuteAsync(findOperation);
+            if (findResult.Result == null)
                 return new NotFoundResult();
 
-            var updatedItem = await Deserialize<TodoUpdateModel>(req);
-            item.IsCompleted = updatedItem.IsCompleted;
+            var existingRow = (TodoTableEntity)findResult.Result;
+            existingRow.IsCompleted = updatedItem.IsCompleted;
             if (!string.IsNullOrEmpty(updatedItem.TaskDescription))
-                item.TaskDescription = updatedItem.TaskDescription;
+                existingRow.TaskDescription = updatedItem.TaskDescription;
 
-            return new OkObjectResult(item);
+            var replaceOperation = TableOperation.Replace(existingRow);
+            await todoTable.ExecuteAsync(replaceOperation);
+            return new OkObjectResult(existingRow.ToTodo());
         }
 
         [FunctionName("DeleteItem")]
-        public static IActionResult DeleteItem(
-            [HttpTrigger(AUTH_LEVEL, METHOD_DELETE, Route = ROUTE + "/{id}")]
-            HttpRequest req,
+        public static async Task<IActionResult> DeleteItem(
+            [HttpTrigger(AUTH_LEVEL, METHOD_DELETE, Route = ROUTE + "/{id}")]HttpRequest req,
+            [Table("todos", Connection = "AzureWebJobsStorage")] CloudTable todoTable,
             TraceWriter log, 
             string id)
         {
-            var item = Store.GetItem(id);
-            if (item == null)
+            var entity = new TableEntity(){ PartitionKey = AZURE_TABLE_PARTITION_KEY, RowKey = id, ETag = "*" };
+            var deleteOperation = TableOperation.Delete(entity);
+            try
+            {
+                var deleteResult = await todoTable.ExecuteAsync(deleteOperation);
+            }
+            catch (StorageException e) when (e.RequestInformation.HttpStatusCode == 404)
+            {
                 return new NotFoundResult();
-
-            Store.Remove(item);
+            }
             return new OkResult();
         }
     }

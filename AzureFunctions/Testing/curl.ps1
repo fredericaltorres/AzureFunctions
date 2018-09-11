@@ -6,12 +6,15 @@
 Import-Module ".\curl.psm1" -Force
 Import-Module ".\assert.psm1" -Force
 
-function createNewItem($url) {
+function createNewItem($url, $wait = $false) {
 
     $desc   = "Hello $([System.Environment]::TickCount)"
     $json   = '{TaskDescription:"' + $desc + '"}'
-    $result = apiPost $url $json   
+    $result = apiPost $url $json
     Write-Host "New item created $($result.id)" 
+    if($wait) {
+        Start-Sleep -Milliseconds 1000
+    }
     return $result
 }
 
@@ -24,6 +27,7 @@ function AssertItem($item, $result) {
 
 cls
 $AZURE_MODE = $false
+# $AZURE_MODE = $true
 
 Assert-Verbose $true
 
@@ -31,6 +35,7 @@ $BaseUrl = "http://localhost:7071/api"
 if($AZURE_MODE) {
     $BaseUrl = "http://azurefunctionsfred.azurewebsites.net/api"
 }
+
 
 $url     = "$BaseUrl/test/reset"
 Assert-IsTrue (apiGet $url) | Out-Null
@@ -40,20 +45,20 @@ $result = apiGet $url
 Assert-AreEqual 0 $result.Length | Out-Null
 
 # Create Item
-$item1 = createNewItem $url
+$item1 = createNewItem $url $true
 $result = apiGet $url
 Assert-AreEqual 1 $result.Length "Verify array length" | Out-Null
 Assert-AreEqual $item1.TaskDescription $result[0].TaskDescription | Out-Null
 
-$item2 = createNewItem $url
+$item2 = createNewItem $url $true
 $result = apiGet $url
 Assert-AreEqual 2 $result.Length "Verify array length" | Out-Null
-Assert-AreEqual $item2.TaskDescription $result[1].TaskDescription | Out-Null
+### Assert-AreEqual $item2.TaskDescription $result[1].TaskDescription | Out-Null
+# In Azure table the last row inserted is in position 0
+Assert-AreEqual $item2.TaskDescription $result[0].TaskDescription | Out-Null
 
 # GetItemById
 $result = apiGet "$url/$($item2.id)"
-
-
 AssertItem $item2 $result
 
 # UpdateItem
@@ -69,3 +74,7 @@ $result = apiDelete "$url/$($item2.id)"
 $result = apiGet $url
 Assert-IsTrue $result | Out-Null
 Assert-AreEqual 1 $result.Length "Verify array length" | Out-Null
+
+$result = apiDelete "$url/$($item1.id)"
+$result = apiGet $url
+Assert-AreEqual 0 $result.Length "Verify array length" | Out-Null
