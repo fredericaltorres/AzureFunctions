@@ -11,7 +11,8 @@ using System.Linq;
 using AzureFunctions;
 using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.WindowsAzure.Storage;
-
+using System.Linq.Expressions;
+using System;
 
 namespace AzureFunctions.RestApi
 {
@@ -30,32 +31,67 @@ namespace AzureFunctions.RestApi
             var input = JsonConvert.DeserializeObject<T>(requestBody);
             return input;
         }
+
+        internal static async Task<bool> AzTableDeleteRow(CloudTable todoTable, string id, string partitionKey)
+        {
+            var entity = new TableEntity() { PartitionKey = partitionKey, RowKey = id, ETag = "*" };
+            var deleteOperation = TableOperation.Delete(entity);
+            try
+            {
+                var deleteResult = await todoTable.ExecuteAsync(deleteOperation);
+            }
+            catch (StorageException e) when (e.RequestInformation.HttpStatusCode == 404)
+            {
+                return false;
+            }
+            return true;
+        }
+       
+        internal static async Task<bool> AzTableDeleteAll(CloudTable todoTable)
+        {
+            try
+            {
+                
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                return false;
+            }            
+        }
     }
     public class TodoRestApi : RestApiBaseClass
     {
-        /// <summary>
-        /// Authorization Level
-        /// </summary>
-        public const AuthorizationLevel AUTH_LEVEL = AuthorizationLevel.Anonymous;
-        /// <summary>
-        /// Api url keyword
-        /// </summary>
-        public const string ROUTE = "todo";
-
-        public const string AZURE_TABLE = "todos";
-        public const string AZURE_TABLE_PARTITION_KEY = "TODO";
+        public const AuthorizationLevel AUTH_LEVEL        = AuthorizationLevel.Anonymous;
+        public const string ROUTE                         = "todo";
+        public const string AZURE_TABLE                   = "todos";
+        public const string AZURE_TABLE_PARTITION_KEY     = "TODO";
         public const string AZURE_TABLE_CONNECTION_STRING = "AzureWebJobsStorage";
-      
-     
+
+        //[FunctionName("GetTestReset")]
+        //public static IActionResult GetTestRest(
+        //    [HttpTrigger(AUTH_LEVEL, METHOD_GET, Route = TEST_RESET_ROUTE)]
+        //    HttpRequest req,
+        //    TraceWriter log)
+        //{
+        //    log.Info("test reset");
+        //    return new OkResult();
+        //}
+
+
         [FunctionName("GetTestReset")]
-        public static IActionResult GetTestRest(
-            [HttpTrigger(AUTH_LEVEL, METHOD_GET, Route = TEST_RESET_ROUTE)]
-            HttpRequest req, 
+        public static async Task<IActionResult> GetTestRest(
+            [HttpTrigger(AUTH_LEVEL, METHOD_GET, Route = TEST_RESET_ROUTE)]HttpRequest req,
+            [Table("todos", Connection = "AzureWebJobsStorage")] CloudTable todoTable,
             TraceWriter log)
         {
-            log.Info("test reset");            
-            return new OkResult();
+            var r = await AzTableDeleteAll(todoTable);
+            if(r)
+                return new OkResult();
+            else
+                return new NotFoundResult();
         }
+
 
         [FunctionName("CreateItem")]
         public static async Task<IActionResult> CreateItem(
@@ -67,7 +103,8 @@ namespace AzureFunctions.RestApi
             log.Info("Creating a new item");
             var inputModel = await Deserialize<TodoUpdateModel>(req);
             var item = new Todo() { TaskDescription = inputModel.TaskDescription };
-            var r = todoTable.AddAsync(item.ToTableEntity()).GetAwaiter().IsCompleted;
+            var task = todoTable.AddAsync(item.ToTableEntity());
+            task.Wait();
             return new OkObjectResult(item);
         }
 
@@ -81,7 +118,9 @@ namespace AzureFunctions.RestApi
             log.Info("Getting todo list items");
             var query = new TableQuery<TodoTableEntity>();
             var segment = await todoTable.ExecuteQuerySegmentedAsync(query, null);
-            return new OkObjectResult(segment.Select(Mappings.ToTodo));
+            var s = segment.Select(Mappings.ToTodo);
+            var r = new OkObjectResult(s);
+            return r;
         }
 
         [FunctionName("GetItemById")]
@@ -124,6 +163,7 @@ namespace AzureFunctions.RestApi
             return new OkObjectResult(existingRow.ToTodo());
         }
 
+
         [FunctionName("DeleteItem")]
         public static async Task<IActionResult> DeleteItem(
             [HttpTrigger(AUTH_LEVEL, METHOD_DELETE, Route = ROUTE + "/{id}")]HttpRequest req,
@@ -131,17 +171,11 @@ namespace AzureFunctions.RestApi
             TraceWriter log, 
             string id)
         {
-            var entity = new TableEntity(){ PartitionKey = AZURE_TABLE_PARTITION_KEY, RowKey = id, ETag = "*" };
-            var deleteOperation = TableOperation.Delete(entity);
-            try
-            {
-                var deleteResult = await todoTable.ExecuteAsync(deleteOperation);
-            }
-            catch (StorageException e) when (e.RequestInformation.HttpStatusCode == 404)
-            {
+            var r = await AzTableDeleteRow(todoTable, id, AZURE_TABLE_PARTITION_KEY);
+            if(r)
+                return new OkResult();
+            else
                 return new NotFoundResult();
-            }
-            return new OkResult();
         }
     }
 }

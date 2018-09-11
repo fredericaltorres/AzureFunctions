@@ -13,7 +13,7 @@ function createNewItem($url, $wait = $false) {
     $result = apiPost $url $json
     Write-Host "New item created $($result.id)" 
     if($wait) {
-        Start-Sleep -Milliseconds 1000
+        # Start-Sleep -Milliseconds 1000
     }
     return $result
 }
@@ -54,8 +54,8 @@ $item2 = createNewItem $url $true
 $result = apiGet $url
 Assert-AreEqual 2 $result.Length "Verify array length" | Out-Null
 ### Assert-AreEqual $item2.TaskDescription $result[1].TaskDescription | Out-Null
-# In Azure table the last row inserted is in position 0
-Assert-AreEqual $item2.TaskDescription $result[0].TaskDescription | Out-Null
+# In Azure table the rows are in random order try row 0 or 1
+Assert-IsTrue (($item2.TaskDescription -eq $result[0].TaskDescription) -or ($item2.TaskDescription -eq $result[1].TaskDescription)) | Out-Null
 
 # GetItemById
 $result = apiGet "$url/$($item2.id)"
