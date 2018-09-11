@@ -16,51 +16,8 @@ using System;
 
 namespace AzureFunctions.RestApi
 {
-    public class RestApiBaseClass
-    {
-        public const string METHOD_GET    = "GET";
-        public const string METHOD_POST   = "POST";
-        public const string METHOD_PUT    = "PUT";
-        public const string METHOD_DELETE = "DELETE";
-
-        public const string TEST_RESET_ROUTE = "test/reset";
-           
-        internal static async Task<T> Deserialize<T>(HttpRequest req)
-        {
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var input = JsonConvert.DeserializeObject<T>(requestBody);
-            return input;
-        }
-
-        internal static async Task<bool> AzTableDeleteRow(CloudTable todoTable, string id, string partitionKey)
-        {
-            var entity = new TableEntity() { PartitionKey = partitionKey, RowKey = id, ETag = "*" };
-            var deleteOperation = TableOperation.Delete(entity);
-            try
-            {
-                var deleteResult = await todoTable.ExecuteAsync(deleteOperation);
-            }
-            catch (StorageException e) when (e.RequestInformation.HttpStatusCode == 404)
-            {
-                return false;
-            }
-            return true;
-        }
-       
-        internal static async Task<bool> AzTableDeleteAll(CloudTable todoTable)
-        {
-            try
-            {
-                
-                return true;
-            }
-            catch (System.Exception ex)
-            {
-                return false;
-            }            
-        }
-    }
-    public class TodoRestApi : RestApiBaseClass
+    
+    public class TodoRestApi : RestApiAzureTableBaseClass
     {
         public const AuthorizationLevel AUTH_LEVEL        = AuthorizationLevel.Anonymous;
         public const string ROUTE                         = "todo";
@@ -77,7 +34,6 @@ namespace AzureFunctions.RestApi
         //    log.Info("test reset");
         //    return new OkResult();
         //}
-
 
         [FunctionName("GetTestReset")]
         public static async Task<IActionResult> GetTestRest(
@@ -116,9 +72,10 @@ namespace AzureFunctions.RestApi
             TraceWriter log)
         {
             log.Info("Getting todo list items");
-            var query = new TableQuery<TodoTableEntity>();
-            var segment = await todoTable.ExecuteQuerySegmentedAsync(query, null);
-            var s = segment.Select(Mappings.ToTodo);
+            IEnumerable<Todo> s = await AzTableQuery(todoTable);
+            //var query = new TableQuery<TodoTableEntity>();
+            //var segment = await todoTable.ExecuteQuerySegmentedAsync(query, null);
+            //IEnumerable<Todo> s = segment.Select(Mappings.ToTodo);
             var r = new OkObjectResult(s);
             return r;
         }

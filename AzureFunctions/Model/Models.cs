@@ -11,10 +11,10 @@ namespace AzureFunctions
         public bool IsCompleted { get; set; }
     }
 
-    public class TodoCreateModel
-    {
-        public string TaskDescription { get; set; }
-    }
+    //public class TodoCreateModel
+    //{
+    //    public string TaskDescription { get; set; }
+    //}
 
     public class TodoUpdateModel
     {
