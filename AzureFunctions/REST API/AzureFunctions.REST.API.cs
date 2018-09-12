@@ -17,7 +17,7 @@ using System;
 namespace AzureFunctions.RestApi
 {
     
-    public class TodoRestApi : RestApiAzureTableBaseClass
+    public class TodoRestApi : RestApiBaseClass
     {
         public const AuthorizationLevel AUTH_LEVEL        = AuthorizationLevel.Anonymous;
         public const string ROUTE                         = "todo";
@@ -41,13 +41,31 @@ namespace AzureFunctions.RestApi
             [Table("todos", Connection = "AzureWebJobsStorage")] CloudTable todoTable,
             TraceWriter log)
         {
-            var r = await AzTableDeleteAll(todoTable);
+            var r = await AzureTableHelper.DeleteAll(todoTable);
             if(r)
                 return new OkResult();
             else
                 return new NotFoundResult();
         }
 
+        // POST "http://localhost:7071/api/todo_queue"
+        [FunctionName("CreateItemAndQueue")]
+        public static async Task<IActionResult> CreateItemAndQueue(
+            [HttpTrigger(AUTH_LEVEL, METHOD_POST, Route = ROUTE+"_queue")]
+            HttpRequest req, 
+            //[Table(AZURE_TABLE, Connection = AZURE_TABLE_CONNECTION_STRING)] IAsyncCollector<TodoTableEntity> todoTable,
+            /* >> QUEUE >> */[Queue(AZURE_TABLE, Connection = AZURE_TABLE_CONNECTION_STRING)] IAsyncCollector<Todo> todoQueue,
+            TraceWriter log)
+        {
+            log.Info("Creating a new item");
+            var inputModel = await Deserialize<TodoUpdateModel>(req);
+            var item = new Todo() { TaskDescription = inputModel.TaskDescription };
+            //var task = todoTable.AddAsync(item.ToTableEntity());
+            //task.Wait();
+
+            await todoQueue.AddAsync(item);
+            return new OkObjectResult(item);
+        }
 
         [FunctionName("CreateItem")]
         public static async Task<IActionResult> CreateItem(
@@ -72,7 +90,7 @@ namespace AzureFunctions.RestApi
             TraceWriter log)
         {
             log.Info("Getting todo list items");
-            IEnumerable<Todo> s = await AzTableQuery(todoTable);
+            IEnumerable<Todo> s = await AzureTableHelper.Query(todoTable);
             //var query = new TableQuery<TodoTableEntity>();
             //var segment = await todoTable.ExecuteQuerySegmentedAsync(query, null);
             //IEnumerable<Todo> s = segment.Select(Mappings.ToTodo);
@@ -128,7 +146,7 @@ namespace AzureFunctions.RestApi
             TraceWriter log, 
             string id)
         {
-            var r = await AzTableDeleteRow(todoTable, id, AZURE_TABLE_PARTITION_KEY);
+            var r = await AzureTableHelper.DeleteRow(todoTable, id, AZURE_TABLE_PARTITION_KEY);
             if(r)
                 return new OkResult();
             else

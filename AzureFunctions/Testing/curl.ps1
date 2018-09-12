@@ -10,12 +10,14 @@ function createNewItem($url, $wait = $false) {
 
     $desc   = "Hello $([System.Environment]::TickCount)"
     $json   = '{TaskDescription:"' + $desc + '"}'
-    $result = apiPost $url $json
-    Write-Host "New item created $($result.id)" 
-    if($wait) {
-        # Start-Sleep -Milliseconds 1000
-    }
-    return $result
+
+    # post item to queue
+    $queuedItem = apiPost ($url+"_queue") $json
+    Write-Host "$queuedItem id $($queuedItem.id)"
+
+    $item = apiPost $url $json
+    Write-Host "New item created $($item.id)"
+    return $item
 }
 
 function AssertItem($item, $result) {

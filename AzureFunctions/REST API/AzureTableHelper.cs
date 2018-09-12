@@ -16,9 +16,9 @@ using System;
 
 namespace AzureFunctions.RestApi
 {
-    public class RestApiAzureTableBaseClass : RestApiBaseClass
+    public static class AzureTableHelper
     {
-        internal static async Task<bool> AzTableDeleteRow(CloudTable todoTable, string id, string partitionKey)
+        internal static async Task<bool> DeleteRow(CloudTable todoTable, string id, string partitionKey)
         {
             var entity = new TableEntity() { PartitionKey = partitionKey, RowKey = id, ETag = "*" };
             var deleteOperation = TableOperation.Delete(entity);
@@ -30,21 +30,31 @@ namespace AzureFunctions.RestApi
             {
                 return false;
             }
-            return true;
-        }
-       
-        internal static async Task<bool> AzTableDeleteAll(CloudTable todoTable)
-        {
-            try
-            {
-                return true;
-            }
             catch (System.Exception ex)
             {
                 return false;
-            }            
+            }
+            return true;
         }
-        internal static async Task<IEnumerable<Todo>> AzTableQuery(CloudTable todoTable) {
+       
+        internal static async Task<bool> DeleteAll(CloudTable todoTable)
+        {
+            var query = new TableQuery<TodoTableEntity>();
+            var segment = await todoTable.ExecuteQuerySegmentedAsync(query, null);
+            var deleted = 0;
+            foreach (var todo in segment)
+            {
+                if (todo.IsCompleted)
+                {
+                    await todoTable.ExecuteAsync(TableOperation.Delete(todo));
+                    deleted++;
+                }
+            }
+            return true;
+        }
+
+        internal static async Task<IEnumerable<Todo>> Query(CloudTable todoTable) {
+
             var query = new TableQuery<TodoTableEntity>();
             var segment = await todoTable.ExecuteQuerySegmentedAsync(query, null);
             IEnumerable<Todo> s = segment.Select(Mappings.ToTodo);
