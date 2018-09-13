@@ -1,14 +1,9 @@
 # Azure Functions
 
-## Example of typical Azure Functions
-
-Based on Plural Sight course
-
-	`Microsoft Azure Developer: Create Serverless Functions`
-
-### Azure Function as REST API
-
-# GitHub SSH Key
+* Azure Function as REST API
+* Queue Listener
+* Write and read to Azure storage
+* PowerShell integration test
 
 # Configuration
 
