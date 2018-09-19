@@ -1,0 +1,13 @@
+.site-navigation {
+	background-color: blue;
+	padding: 10px 0;
+}
+
+.site-navigation a {
+	margin-right: 10px;
+	color: white;
+}
+
+.site-navigation a.active {
+	font-weight: bold;
+}

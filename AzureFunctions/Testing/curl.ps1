@@ -6,21 +6,23 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory=$false, Position=0)]
-    [string]$action         = "createtasklist" # createtasklist  unittest
+    [string]$action         = "unittest" # createtasklist  unittest
     
 )
 
 Import-Module ".\curl.psm1" -Force
 Import-Module ".\assert.psm1" -Force
 
-function createNewItem($url, $wait = $false) {
+function createNewItem($url, $postToQueue = $false) {
 
     $desc   = "Hello $([System.Environment]::TickCount)"
     $json   = '{TaskDescription:"' + $desc + '"}'
 
-    # post item to queue
-    $queuedItem = apiPost ($url+"_queue") $json
-    Write-Host "$queuedItem id $($queuedItem.id)"
+    if($postToQueue) {
+        # post item to queue
+        $queuedItem = apiPost ($url+"_queue") $json
+        Write-Host "$queuedItem id $($queuedItem.id)"
+    }
 
     $item = apiPost $url $json
     Write-Host "New item created $($item.id)"
@@ -60,6 +62,7 @@ function UnitTests($BaseUrl) {
     # GetItemById
     $result = apiGet "$url/$($item2.id)"
     AssertItem $item2 $result
+    "result >> $(ConvertTo-Json($result))" 
 
     # UpdateItem
     $item2.IsCompleted = $true
@@ -84,9 +87,18 @@ function UnitTests($BaseUrl) {
 function CreateTestableTask() {
     $d = @{}
     $d["id"] = [System.Guid]::NewGuid()
-    $d["createdTime"]  = [DateTime]::UtcNow
+    $d["createdTime"]  = "2018-09-19T01:19:20.403636Z" #[DateTime]::UtcNow
     $d["taskDescription"]  = "Description"
     $d["isCompleted"]  = $false
+
+<#
+{
+    "id":  "3e1e30acd1124320a1d036c6b40e4273",
+    "createdTime":  "2018-09-19T01:19:20.403636Z",
+    "taskDescription":  "Hello 19738000",
+    "isCompleted":  false
+}
+#>
    
 
     $json = ConvertTo-Json $d
@@ -94,11 +106,13 @@ function CreateTestableTask() {
 }
 
 
-function CreateTaskList() {
+function CreateTaskList($url) {
     
+    $url = "$BaseUrl/todo"
     $array = [System.Collections.ArrayList]@()
-    for ($i=0; $i -lt 2; $i++) {
-        $array.Add((CreateTestableTask))
+    for ($i=0; $i -lt 8; $i++) {
+        #$array.Add((CreateTestableTask))
+        $item = createNewItem $url $false
     }
     return $array
 }
@@ -107,7 +121,7 @@ cls
 $AZURE_MODE = $false
 # $AZURE_MODE = $true
 
-Assert-Verbose $true
+#Assert-Verbose $true
 
 $BaseUrl = "http://localhost:7071/api"
 if($AZURE_MODE) {
