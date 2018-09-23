@@ -41,7 +41,7 @@ namespace AzureFunctions.RestApi
         public const string AZURE_TABLE_CONNECTION_STRING = "AzureWebJobsStorage";
 
         //[FunctionName("GetTestReset")]
-        //public static IActionResult GetTestRest(
+        //public static IActionResult GetTestReset(
         //    [HttpTrigger(AUTH_LEVEL, METHOD_GET, Route = TEST_RESET_ROUTE)]
         //    HttpRequest req,
         //    TraceWriter log)
@@ -51,7 +51,7 @@ namespace AzureFunctions.RestApi
         //}
 
         [FunctionName("GetTestReset")]
-        public static async Task<IActionResult> GetTestRest(
+        public static async Task<IActionResult> GetTestReset(
             [HttpTrigger(AUTH_LEVEL, METHOD_GET, Route = TEST_RESET_ROUTE)]HttpRequest req,
             [Table("todos", Connection = "AzureWebJobsStorage")] CloudTable todoTable,
             TraceWriter log)
@@ -68,15 +68,12 @@ namespace AzureFunctions.RestApi
         public static async Task<IActionResult> CreateItemAndQueue(
             [HttpTrigger(AUTH_LEVEL, METHOD_POST, Route = ROUTE+"_queue")]
             HttpRequest req, 
-            //[Table(AZURE_TABLE, Connection = AZURE_TABLE_CONNECTION_STRING)] IAsyncCollector<TodoTableEntity> todoTable,
             /* >> QUEUE >> */[Queue(AZURE_TABLE, Connection = AZURE_TABLE_CONNECTION_STRING)] IAsyncCollector<Todo> todoQueue,
             TraceWriter log)
         {
             log.Info("Creating a new item");
             var inputModel = await Deserialize<TodoUpdateModel>(req);
             var item = new Todo() { TaskDescription = inputModel.TaskDescription };
-            //var task = todoTable.AddAsync(item.ToTableEntity());
-            //task.Wait();
 
             await todoQueue.AddAsync(item);
             return new OkObjectResult(item);
@@ -94,7 +91,6 @@ namespace AzureFunctions.RestApi
             var item = new Todo() { TaskDescription = inputModel.TaskDescription };
             var task = todoTable.AddAsync(item.ToTableEntity());
             task.Wait();
-            // System.Threading.Thread.Sleep(2*1000);
             return new OkObjectResult(item);
         }
 
@@ -107,9 +103,6 @@ namespace AzureFunctions.RestApi
         {
             log.Info("Getting todo list items");
             IEnumerable<Todo> s = await AzureTableHelper.Query(todoTable);
-            //var query = new TableQuery<TodoTableEntity>();
-            //var segment = await todoTable.ExecuteQuerySegmentedAsync(query, null);
-            //IEnumerable<Todo> s = segment.Select(Mappings.ToTodo);
             var r = new OkObjectResult(s);
             return r;
         }
@@ -137,8 +130,6 @@ namespace AzureFunctions.RestApi
             TraceWriter log, string id)
         {
             var updatedItem = await Deserialize<TodoUpdateModel>(req);
-            //string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            //var updated = JsonConvert.DeserializeObject<TodoUpdateModel>(requestBody);
             var findOperation = TableOperation.Retrieve<TodoTableEntity>(AZURE_TABLE_PARTITION_KEY, id);
             var findResult = await todoTable.ExecuteAsync(findOperation);
             if (findResult.Result == null)

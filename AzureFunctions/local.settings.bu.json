@@ -2,11 +2,11 @@
   "IsEncrypted": false,
   "Values": {
     // "zureWebJobsStorage": "UseDevelopmentStorage=true",
-    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=azurefunctionsfred;AccountKey=tuJA==;EndpointSuffix=core.windows.net",
+    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=azurefunctionsfred;AccountKey=ocuyA8MbAX2wntuJA==;EndpointSuffix=core.windows.net",
 
     "AzureWebJobsDashboard": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    "FUNCTIONS_EXTENSION_VERSION": "beta"
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet", // InAzure: Not defined
+    "FUNCTIONS_EXTENSION_VERSION": "beta" // In Azure ~2
   },
   "Host": {
     "CORS" :  "*" // Does not work in AZURE, see app settings
