@@ -6,7 +6,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory=$false, Position=0)]
-    [string]$action         = "unittest" # createtasklist  unittest
+    [string]$action         = "createtasklist" # createtasklist  unittest
     
 )
 
@@ -119,7 +119,7 @@ function CreateTaskList($url) {
 
 cls
 $AZURE_MODE = $false
-# $AZURE_MODE = $true
+$AZURE_MODE = $true
 
 #Assert-Verbose $true
 

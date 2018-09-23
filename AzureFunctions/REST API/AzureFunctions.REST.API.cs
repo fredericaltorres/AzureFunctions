@@ -16,7 +16,22 @@ using System;
 
 namespace AzureFunctions.RestApi
 {
-    
+    /// <summary>
+    /// update https://marketplace.visualstudio.com/items?itemName=VisualStudioWebandAzureTools.AzureFunctionsandWebJobsTools
+    /// Reference
+    ///     Microsoft.NET.Sdk.Functions
+    ///     Microsoft.Azure.WebJobs.Extensions.Storage
+    /// Breaking Changes
+    ///     https://github.com/Azure/app-service-announcements/issues/129
+    /// 
+    /// Azure Deployed Calls
+    ///     http://azurefunctionsfred.azurewebsites.net/api/todo
+    ///     https://azurefunctionsfred.azurewebsites.net/api/todo
+    ///     
+    /// Trouble Shooting
+    /// Go to console management
+    /// D:\home\LogFiles\Application\Functions 
+    /// </summary>
     public class TodoRestApi : RestApiBaseClass
     {
         public const AuthorizationLevel AUTH_LEVEL        = AuthorizationLevel.Anonymous;
@@ -79,6 +94,7 @@ namespace AzureFunctions.RestApi
             var item = new Todo() { TaskDescription = inputModel.TaskDescription };
             var task = todoTable.AddAsync(item.ToTableEntity());
             task.Wait();
+            // System.Threading.Thread.Sleep(2*1000);
             return new OkObjectResult(item);
         }
 
