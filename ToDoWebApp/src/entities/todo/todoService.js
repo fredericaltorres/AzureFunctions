@@ -1,5 +1,5 @@
-import axios from 'axios';
-import tracer from '../../common/Tracer';
+import axios from "axios";
+import tracer from "../../common/Tracer";
 
 const Config = {
     AZURE : true

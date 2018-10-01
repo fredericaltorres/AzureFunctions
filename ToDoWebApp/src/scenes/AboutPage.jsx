@@ -1,7 +1,7 @@
-import React from 'react';
+import React from "react";
 
 export default () => (
-	<div className="text-body">
+  <div className="text-body">
 		<h1>About</h1>
 		<p>A To Do App written with
 			<ul>

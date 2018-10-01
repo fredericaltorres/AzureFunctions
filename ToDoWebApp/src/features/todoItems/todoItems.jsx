@@ -63,7 +63,7 @@ class TodoItems extends React.PureComponent {
 				timeStamp
 			}
 		}		
-		tracer.log(`forceRefresh ${JSON.stringify(newState)}`, this);
+		// tracer.log(`forceRefresh ${JSON.stringify(newState)}`, this);
 		this.setState(newState);
 	}
 	renderToDoItemToJsx = (todoItem) => {
@@ -72,13 +72,13 @@ class TodoItems extends React.PureComponent {
 		if(!this.state.showDate)
 			createdTime = null;
 
-		return <TodoItem forceRefresh={this.forceRefresh}
+		return ( <TodoItem forceRefresh={this.forceRefresh}
 			id={todoItem.id} 
 			createdTime={createdTime}
 			taskDescription={todoItem.taskDescription} 
 			isCompleted={todoItem.isCompleted}			
 			key={todoItem.id} 
-			/>;
+		/> );
 	}
 	renderToDoItemsToJsx = (todoItems) => {
 
@@ -98,6 +98,13 @@ class TodoItems extends React.PureComponent {
 		return <div>
 			<button disabled={this.props.isLoading} type="button" className="btn btn-primary" onClick={this.handleSubmit}>Add</button> &nbsp;
 			<button type="button" className={className}>{message}</button>			
+			&nbsp;&nbsp;
+			
+			<input type="checkbox" style={{transform: 'scale(1.75)'}} 
+					checked={this.state.showDate}
+					id="chkShowDate" 
+					onChange={this.onShowDateCheckboxClick} 
+				/> Show Date
 		</div>;
 	}
 	getTaskDescriptionInputBoxJsx = (isLoading) => {
@@ -172,7 +179,7 @@ class TodoItems extends React.PureComponent {
 		);
 	}
 	render() {
-		tracer.log('render()', this);
+		tracer.log(`render() timeStamp:${this.state.timeStamp}`, this);
 		
 		return (
 			<section>
@@ -195,14 +202,6 @@ class TodoItems extends React.PureComponent {
 				<ul className="list-group" style={{marginTop:'5px'}}>
 					{this.renderToDoItemsToJsx(this.props.todoItems)}
 				</ul>
-
-				<hr/>
-
-				<input type="checkbox" style={{transform: 'scale(1.75)'}} 
-					checked={this.state.showDate}
-					id="chkShowDate" 
-					onChange={this.onShowDateCheckboxClick} 
-				/> &nbsp; Show Date
 			</section>
 		);
 	}

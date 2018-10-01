@@ -3,11 +3,11 @@ import { connectRouter, routerMiddleware } from "connected-react-router";
 import thunk from "redux-thunk";
 import createHistory from "history/createBrowserHistory";
 import rootReducer from "app/rootReducer";
-import { createToDoFetchAsyncAction } from '../entities/todo/todoActionCreator';
+import { createToDoFetchAsyncAction } from "../entities/todo/todoActionCreator";
 
-import tracer from '../common/Tracer';
+import tracer from "../common/Tracer";
 
-import actionTracerMiddleware from '../middleware/actionTracerMiddleware';
+import actionTracerMiddleware from "../middleware/actionTracerMiddleware";
 
 export const history = createHistory();
 

@@ -1,6 +1,6 @@
 import { createAsyncAction } from "@emoney/redux-utils";
-import TodoService from './todoService';
-import tracer from '../../common/Tracer';
+import TodoService from "./todoService";
+import tracer from "../../common/Tracer";
 
 
 const TODO_FETCH = 'TODO_FETCH';

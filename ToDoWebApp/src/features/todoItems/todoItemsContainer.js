@@ -46,13 +46,13 @@ const mapDispatchToProps = (dispatch) => ({
 		const newTodo = { taskDescription };
 		return dispatch(createToDoAddAsyncAction(newTodo));
 	},
-	markAllAsCompleted : (comp) => {
+	markAllAsCompleted : () => {
 		return dispatch(createToDoMarkAllAsCompletedAsyncAction());		
 	},
-	markAllAsNotCompleted : (comp) => {
+	markAllAsNotCompleted : () => {
 		return dispatch(createToDoMarkAllAsNotCompletedAsyncAction());
 	},
-	deletAll : (comp) => {
+	deletAll : () => {
 		return dispatch(createToDoDeleteAllAsyncAction());
 	}
 });

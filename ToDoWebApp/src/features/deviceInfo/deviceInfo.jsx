@@ -12,9 +12,9 @@ import {
 } from 'react-device-detect';
 
 // https://www.npmjs.com/package/react-device-detect
-class DeviceInfo extends React.PureComponent {
-	
-	static propTypes = {		
+class DeviceInfo extends React.PureComponent {	
+	static propTypes = {
+        aa:PropTypes.number
 	};
 	state = {
 		timeStamp: new Date().getTime(),
@@ -50,7 +50,7 @@ class DeviceInfo extends React.PureComponent {
         const rows = values.map((v) => {
             const name = Object.keys(v)[0];
             const val = v[name];
-            return (<tr>
+            return (<tr key={name}>
                     <td>{name}</td>
                     <td>{val.toString()}</td>
                 </tr>

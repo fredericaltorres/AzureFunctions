@@ -34,10 +34,8 @@
     "lint": "eslint --ext .js,.jsx src"
   },
   "devDependencies": {
-    "eslint": "^5.3.0",
-    "eslint-config-emoney": "^1.0.0",
-    "eslint-config-prettier": "^3.0.1",
-    "prettier": "^1.14.2",
+    "eslint": "^5.6.1",
+    "eslint-plugin-react": "^7.11.1",
     "prop-types": "^15.6.2"
   }
 }

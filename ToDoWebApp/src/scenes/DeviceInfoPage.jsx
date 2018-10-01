@@ -1,5 +1,5 @@
-import React from 'react';
-import DeviceInfo from '../features/deviceInfo/deviceInfo';
+import React from "react";
+import DeviceInfo from "../features/deviceInfo/deviceInfo";
 
 export default () => (
 	<div>
