@@ -18,11 +18,12 @@ using MQTTManagerLib;
 namespace AzureFunctions.RestApi
 {
     /// <summary>
-    /// update https://marketplace.visualstudio.com/items?itemName=VisualStudioWebandAzureTools.AzureFunctionsandWebJobsTools
+    /// Visual Studio Extension needed
+    ///     https://marketplace.visualstudio.com/items?itemName=VisualStudioWebandAzureTools.AzureFunctionsandWebJobsTools
     /// Reference
     ///     Microsoft.NET.Sdk.Functions
     ///     Microsoft.Azure.WebJobs.Extensions.Storage
-    /// Breaking Changes
+    /// Breaking Changes deployed on 2018.08
     ///     https://github.com/Azure/app-service-announcements/issues/129
     /// 
     /// Azure Deployed Calls
@@ -30,8 +31,8 @@ namespace AzureFunctions.RestApi
     ///     https://azurefunctionsfred.azurewebsites.net/api/todo
     ///     
     /// Trouble Shooting
-    /// Go to console management
-    /// D:\home\LogFiles\Application\Functions 
+    ///     Go to console management
+    ///     D:\home\LogFiles\Application\Functions 
     /// </summary>
     public class TodoRestApi : RestApiBaseClass
     {
@@ -43,7 +44,6 @@ namespace AzureFunctions.RestApi
 
         static MQTTManager mqttManager = null;
 
-        //const string channel = "/todo-update";
         const string channel = "/todo-update";
 
         static TodoRestApi()
@@ -86,7 +86,14 @@ namespace AzureFunctions.RestApi
                 return new NotFoundResult();
         }
 
-        // POST "http://localhost:7071/api/todo_queue"
+        /// <summary>
+        /// How to call this api
+        ///     POST "http://localhost:7071/api/todo_queue" 
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="todoQueue"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
         [FunctionName("CreateItemAndQueue")]
         public static async Task<IActionResult> CreateItemAndQueue(
             [HttpTrigger(AUTH_LEVEL, METHOD_POST, Route = ROUTE+"_queue")]
