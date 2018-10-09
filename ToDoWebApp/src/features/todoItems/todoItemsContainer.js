@@ -7,7 +7,8 @@ import {
 	createToDoAddAsyncAction,
 	createToDoMarkAllAsCompletedAsyncAction,
 	createToDoMarkAllAsNotCompletedAsyncAction,
-	createToDoDeleteAllAsyncAction
+	createToDoDeleteAllAsyncAction,
+	createToDoFetchAsyncAction
 } from '../../entities/todo/todoActionCreator'
 
 const mapStateToProps = (globalState) => {
@@ -54,6 +55,11 @@ const mapDispatchToProps = (dispatch) => ({
 	},
 	deletAll : () => {
 		return dispatch(createToDoDeleteAllAsyncAction());
+	},
+	reloadToDo : () => {
+		dispatch(createToDoFetchAsyncAction()).then((response) => {
+			console.log(`Todo items reloaded`);
+		});
 	}
 });
 

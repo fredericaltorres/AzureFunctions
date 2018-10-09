@@ -6,9 +6,11 @@ import {
 	createToDoAddAsyncAction,
 	createToDoMarkAllAsCompletedAsyncAction,
 	createToDoMarkAllAsNotCompletedAsyncAction,
-	createToDoDeleteAllAsyncAction
+	createToDoDeleteAllAsyncAction,
+	createToDoFetchAsyncAction
 } from '../../entities/todo/todoActionCreator'
-import { isMobile } from 'react-device-detect';
+import { osName, osVersion, browserName, isMobile  } from 'react-device-detect';
+import MqttManager from './mqttManager';
 
 import "./todoItems.css";
 
@@ -24,6 +26,7 @@ class TodoItems extends React.PureComponent {
 		markAllAsNotCompleted: PropTypes.func.isRequired,
 		deletAll: PropTypes.func.isRequired,
 		addNewToDo: PropTypes.func.isRequired,
+		reloadToDo: PropTypes.func.isRequired,
 	};
 	static setShowDateFromDB(showDate) {
 		localStorage.setItem('showDate', JSON.stringify(showDate));
@@ -39,6 +42,7 @@ class TodoItems extends React.PureComponent {
 		timeStamp: new Date().getTime(),
 		editText :'',
 		showDate : TodoItems.getShowDateFromDB(),
+		mqttNewMessage : null
 	};
 	constructor() {
 
@@ -46,6 +50,30 @@ class TodoItems extends React.PureComponent {
 		this.name = "TodoItems";
 		tracer.log('constructor', this);
 	}
+	onMqttMessageArrived = (mqttParsedMessage) => {
+		this.setState({ ...this.state, mqttNewMessage: mqttParsedMessage });
+		this.props.reloadToDo();
+    }
+	componentDidMount() {
+		const mqttUrl       = 'wss://m15.cloudmqtt.com';
+		const mqttChannel   = "/todo-update";
+		const clientId      = `iotDashboard-${osName}-${osVersion}-${browserName}-` + Math.random().toString(16).substr(2, 8);
+		if(!this._mqttManager) {
+			this._mqttManager   = new MqttManager(mqttUrl, 'user1', 'user1', undefined, clientId);
+
+			this._mqttManager.start().then((value) => {
+
+				this._mqttManager.subscribe(mqttChannel).then((channel) => {
+
+					this._mqttManager.publish(mqttChannel, `New todo web app instance connected`);
+				});
+				this._mqttManager.messageArrived = this.onMqttMessageArrived;
+			})
+			.catch((value) => {
+				alert(value);
+			});
+		}
+    }
 	forceRefresh = (otherState) => {
 
 		const timeStamp = new Date().getTime();
@@ -94,6 +122,12 @@ class TodoItems extends React.PureComponent {
 		}
 		const message = isLoading ? "Busy . . . " : "Ready . . . ";
 		let className = isLoading ? "btn btn-outline-warning" : "btn btn-outline-primary";
+		let mqttJsx = null;
+		if(this.state.mqttNewMessage !== null) {
+			mqttJsx = <span>
+				{this.state.mqttNewMessage.message}
+			</span>;
+		}
 
 		return <div>
 			<button disabled={this.props.isLoading} type="button" className="btn btn-primary" onClick={this.handleSubmit}>Add</button> &nbsp;
@@ -105,6 +139,8 @@ class TodoItems extends React.PureComponent {
 					id="chkShowDate" 
 					onChange={this.onShowDateCheckboxClick} 
 				/> Show Date
+
+			{mqttJsx}
 		</div>;
 	}
 	getTaskDescriptionInputBoxJsx = (isLoading) => {

@@ -13,6 +13,7 @@ using Microsoft.WindowsAzure.Storage.Table;
 using Microsoft.WindowsAzure.Storage;
 using System.Linq.Expressions;
 using System;
+using MQTTManagerLib;
 
 namespace AzureFunctions.RestApi
 {
@@ -40,15 +41,37 @@ namespace AzureFunctions.RestApi
         public const string AZURE_TABLE_PARTITION_KEY     = "TODO";
         public const string AZURE_TABLE_CONNECTION_STRING = "AzureWebJobsStorage";
 
-        //[FunctionName("GetTestReset")]
-        //public static IActionResult GetTestReset(
-        //    [HttpTrigger(AUTH_LEVEL, METHOD_GET, Route = TEST_RESET_ROUTE)]
-        //    HttpRequest req,
-        //    TraceWriter log)
-        //{
-        //    log.Info("test reset");
-        //    return new OkResult();
-        //}
+        static MQTTManager mqttManager = null;
+
+        //const string channel = "/todo-update";
+        const string channel = "/todo-update";
+
+        static TodoRestApi()
+        {
+            string connectionString = "tcp://m15.cloudmqtt.com:10989";
+            string username = "user1";
+            string password = "";
+            var clientId = MQTTManager.BuildClientId();
+            
+            if(mqttManager == null)
+            {
+                Console.WriteLine("Open MQTT");
+                mqttManager = new MQTTManager(connectionString, clientId, username, password);
+                mqttManager.Start(channel);
+                mqttManager.Publish(channel, $"New todo rest api instance running on {Environment.MachineName} {Environment.UserDomainName} {Environment.UserName}");
+            }                
+        }
+
+        internal enum mqttNotifyType
+        {
+            Create, Update, Delete
+        }
+
+        static void mqttNotify(string resourceId, mqttNotifyType notificationType)
+        {
+            var m = $"{DateTime.Now}/{notificationType}/{resourceId}";
+            mqttManager.Publish(channel, m);
+        }
 
         [FunctionName("GetTestReset")]
         public static async Task<IActionResult> GetTestReset(
@@ -91,6 +114,7 @@ namespace AzureFunctions.RestApi
             var item = new Todo() { TaskDescription = inputModel.TaskDescription };
             var task = todoTable.AddAsync(item.ToTableEntity());
             task.Wait();
+            mqttNotify(item.Id.ToString(), mqttNotifyType.Create);
             return new OkObjectResult(item);
         }
 
@@ -142,6 +166,7 @@ namespace AzureFunctions.RestApi
 
             var replaceOperation = TableOperation.Replace(existingRow);
             await todoTable.ExecuteAsync(replaceOperation);
+            mqttNotify(id, mqttNotifyType.Update);
             return new OkObjectResult(existingRow.ToTodo());
         }
 
@@ -154,6 +179,7 @@ namespace AzureFunctions.RestApi
             string id)
         {
             var r = await AzureTableHelper.DeleteRow(todoTable, id, AZURE_TABLE_PARTITION_KEY);
+            mqttNotify(id, mqttNotifyType.Delete);
             if(r)
                 return new OkResult();
             else

@@ -23,4 +23,15 @@
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="3.0.0" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.22" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="MqttLib">
+      <HintPath>ref\MqttLib.dll</HintPath>
+    </Reference>
+    <Reference Include="mqttManagerLib">
+      <HintPath>ref\mqttManagerLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>ref\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>

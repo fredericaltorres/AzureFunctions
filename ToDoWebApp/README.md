@@ -24,6 +24,11 @@ jest --init
 npm install --dev babel-jest babel-core regenerator-runtime
 ```
 
+# enzyme Configuration
+
+https://airbnb.io/enzyme/
+npm i --save-dev enzyme enzyme-adapter-react-16 enzyme-to-json
+
 ## NPM configuration
 
 ## File .babelrc
