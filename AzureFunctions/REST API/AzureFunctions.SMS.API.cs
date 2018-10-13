@@ -36,20 +36,17 @@ namespace AzureFunctions.RestApi
     /// </summary>
     public class SmsRestApi : RestApiBaseClass
     {
-        public const AuthorizationLevel AUTH_LEVEL        = AuthorizationLevel.Anonymous;
-        
-        public const string SMS_ROUTE = "sms";
-
-        static MQTTManager smsMqttManager = null;
-
-        const string channel = "/sms-update";
+        public const AuthorizationLevel AUTH_LEVEL = AuthorizationLevel.Anonymous;
+        public const string SMS_ROUTE              = "sms";
+        static MQTTManager smsMqttManager          = null;
+        const string channel                       = "/sms-update";
 
         static SmsRestApi()
         {
             string connectionString = "tcp://m15.cloudmqtt.com:10989";
-            string username = "user1";
-            string password = MQTT_PASSWORD;
-            var clientId = MQTTManager.BuildClientId();
+            string username         = "user1";
+            string password         = MQTT_PASSWORD;
+            var clientId            = MQTTManager.BuildClientId();
             
             if(smsMqttManager == null)
             {
