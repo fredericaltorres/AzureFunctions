@@ -50,7 +50,7 @@ namespace AzureFunctions.RestApi
         {
             string connectionString = "tcp://m15.cloudmqtt.com:10989";
             string username = "user1";
-            string password = "";
+            string password = MQTT_PASSWORD;
             var clientId = MQTTManager.BuildClientId();
             
             if(mqttManager == null)
@@ -192,5 +192,26 @@ namespace AzureFunctions.RestApi
             else
                 return new NotFoundResult();
         }
+        
+        //public const string SMS_ROUTE = "sms";
+
+        //// https://azurefunctionsfred.azurewebsites.net/api/todo/19787606031/Hello
+        //// http://localhost:7071/api/todo/19787606031/Hello
+        //[FunctionName("SendSms")]
+        //public static IActionResult SendSms(
+        //    [HttpTrigger(AUTH_LEVEL, METHOD_GET, Route = ROUTE+"/{to}/{text}")]
+        //    HttpRequest req, 
+        //    TraceWriter log, 
+        //    string to, string text)
+        //{
+        //    log.Info($"SendSms {to}, {text}");
+        //    var msg = new TwilioManager().SendSms(to, text);
+            
+        //    return new OkObjectResult(new {
+        //        ErrorCode=msg.ErrorCode,
+        //        ErrorMessage=msg.ErrorMessage,
+        //        sid=msg.Sid,
+        //    });
+        //}
     }
 }

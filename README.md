@@ -12,3 +12,4 @@ Azure Function App
 	Application Settings
 
 		FUNCTIONS_EXTENSION_VERSION=beta
+		MSDEPLOY_RENAME_LOCKED_FILES=1
