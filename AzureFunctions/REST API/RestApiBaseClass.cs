@@ -26,7 +26,7 @@ namespace AzureFunctions.RestApi
 
         public const string TEST_RESET_ROUTE = "test/reset";
 
-        public const string MQTT_PASSWORD = "user1";
+        public const string MQTT_PASSWORD = "";
 
         internal static async Task<T> Deserialize<T>(HttpRequest req)
         {
