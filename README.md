@@ -13,3 +13,7 @@ Azure Function App
 
 		FUNCTIONS_EXTENSION_VERSION=beta
 		MSDEPLOY_RENAME_LOCKED_FILES=1
+
+in File zureFunctionsFred - Web Deploy.pubxml	
+
+	<EnableMsDeployAppOffline>True</EnableMsDeployAppOffline>

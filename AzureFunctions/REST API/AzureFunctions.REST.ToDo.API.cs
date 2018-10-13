@@ -49,7 +49,7 @@ namespace AzureFunctions.RestApi
         static TodoRestApi()
         {
             string connectionString = "tcp://m15.cloudmqtt.com:10989";
-            string username = "user1";
+            string username = MQTT_USER;
             string password = MQTT_PASSWORD;
             var clientId = MQTTManager.BuildClientId();
             

@@ -14,6 +14,7 @@ using Microsoft.WindowsAzure.Storage;
 using System.Linq.Expressions;
 using System;
 using MQTTManagerLib;
+using Twilio.Rest.Api.V2010.Account;
 
 namespace AzureFunctions.RestApi
 {
@@ -43,9 +44,10 @@ namespace AzureFunctions.RestApi
 
         static SmsRestApi()
         {
+            
             string connectionString = "tcp://m15.cloudmqtt.com:10989";
-            string username         = "user1";
-            string password         = MQTT_PASSWORD;
+            string username = MQTT_USER;
+            string password = MQTT_PASSWORD;
             var clientId            = MQTTManager.BuildClientId();
             
             if(smsMqttManager == null)
@@ -53,7 +55,7 @@ namespace AzureFunctions.RestApi
                 Console.WriteLine("Open MQTT");
                 smsMqttManager = new MQTTManager(connectionString, clientId, username, password);
                 smsMqttManager.Start(channel);
-                smsMqttManager.Publish(channel, $"New SMS rest api instance running on {Environment.MachineName} {Environment.UserDomainName} {Environment.UserName}");
+                smsMqttManager.Publish(channel, $"@@@ New SMS rest api instance running on {Environment.MachineName} {Environment.UserDomainName} {Environment.UserName}");
             }                
         }
 
@@ -67,7 +69,15 @@ namespace AzureFunctions.RestApi
             string to, string text)
         {
             log.Info($"SendSms {to}, {text}");
-            var msg = new TwilioManager().SendSms(to, text);
+            MessageResource msg = null;
+            try{
+                msg = new TwilioManager().SendSms(to, text);
+            }
+            catch(System.Exception ex)
+            {
+                // https://exceptionnotfound.net/asp-net-core-demystified-action-results/
+                return new OkObjectResult(ex.Message);
+            }
             return new OkObjectResult(msg);
         }
 
