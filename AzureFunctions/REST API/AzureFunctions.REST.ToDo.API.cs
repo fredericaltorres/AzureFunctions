@@ -41,17 +41,16 @@ namespace AzureFunctions.RestApi
         public const string AZURE_TABLE                   = "todos";
         public const string AZURE_TABLE_PARTITION_KEY     = "TODO";
         public const string AZURE_TABLE_CONNECTION_STRING = "AzureWebJobsStorage";
+        private const string channel                      = "/todo-update";
 
         static MQTTManager mqttManager = null;
-
-        const string channel = "/todo-update";
 
         static TodoRestApi()
         {
             string connectionString = "tcp://m15.cloudmqtt.com:10989";
-            string username = MQTT_USER;
-            string password = MQTT_PASSWORD;
-            var clientId = MQTTManager.BuildClientId();
+            string username         = MQTT_USER;
+            string password         = MQTT_PASSWORD;
+            var clientId            = MQTTManager.BuildClientId();
             
             if(mqttManager == null)
             {
@@ -134,8 +133,7 @@ namespace AzureFunctions.RestApi
         {
             log.Info("Getting todo list items");
             IEnumerable<Todo> s = await AzureTableHelper.Query(todoTable);
-            var r = new OkObjectResult(s);
-            return r;
+            return new OkObjectResult(s);
         }
 
         [FunctionName("GetItemById")]
@@ -192,26 +190,5 @@ namespace AzureFunctions.RestApi
             else
                 return new NotFoundResult();
         }
-        
-        //public const string SMS_ROUTE = "sms";
-
-        //// https://azurefunctionsfred.azurewebsites.net/api/todo/19787606031/Hello
-        //// http://localhost:7071/api/todo/19787606031/Hello
-        //[FunctionName("SendSms")]
-        //public static IActionResult SendSms(
-        //    [HttpTrigger(AUTH_LEVEL, METHOD_GET, Route = ROUTE+"/{to}/{text}")]
-        //    HttpRequest req, 
-        //    TraceWriter log, 
-        //    string to, string text)
-        //{
-        //    log.Info($"SendSms {to}, {text}");
-        //    var msg = new TwilioManager().SendSms(to, text);
-            
-        //    return new OkObjectResult(new {
-        //        ErrorCode=msg.ErrorCode,
-        //        ErrorMessage=msg.ErrorMessage,
-        //        sid=msg.Sid,
-        //    });
-        //}
     }
 }

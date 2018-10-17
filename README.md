@@ -17,3 +17,9 @@ Azure Function App
 in File zureFunctionsFred - Web Deploy.pubxml	
 
 	<EnableMsDeployAppOffline>True</EnableMsDeployAppOffline>
+
+# Twilio
+
+* Configuration 
+
+	https://www.twilio.com/console/project/settings
