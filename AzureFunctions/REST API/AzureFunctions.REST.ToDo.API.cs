@@ -27,8 +27,8 @@ namespace AzureFunctions.RestApi
     ///     https://github.com/Azure/app-service-announcements/issues/129
     /// 
     /// Azure Deployed Calls
-    ///     http://azurefunctionsfred.azurewebsites.net/api/todo
-    ///     https://azurefunctionsfred.azurewebsites.net/api/todo
+    ///     http://xxxxx.azurewebsites.net/api/todo
+    ///     https://xxxxxxxxx.azurewebsites.net/api/todo
     ///     
     /// Trouble Shooting
     ///     Go to console management

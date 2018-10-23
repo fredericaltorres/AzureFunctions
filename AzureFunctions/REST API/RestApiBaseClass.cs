@@ -31,6 +31,13 @@ namespace AzureFunctions.RestApi
                 return Environment.GetEnvironmentVariable("MQTT_PASSWORD");
             }
         }
+
+        public static string MQTT_URL  {
+            get {
+                return Environment.GetEnvironmentVariable("MQTT_URL");
+            }
+        }
+        
         public static string MQTT_USER  {
             get {
                 return Environment.GetEnvironmentVariable("MQTT_USER");

@@ -19,35 +19,20 @@ using Twilio.Rest.Api.V2010.Account;
 namespace AzureFunctions.RestApi
 {
     /// <summary>
-    /// Visual Studio Extension needed
-    ///     https://marketplace.visualstudio.com/items?itemName=VisualStudioWebandAzureTools.AzureFunctionsandWebJobsTools
-    /// Reference
-    ///     Microsoft.NET.Sdk.Functions
-    ///     Microsoft.Azure.WebJobs.Extensions.Storage
-    /// Breaking Changes deployed on 2018.08
-    ///     https://github.com/Azure/app-service-announcements/issues/129
-    /// 
-    /// Azure Deployed Calls
-    ///     http://azurefunctionsfred.azurewebsites.net/api/todo
-    ///     https://azurefunctionsfred.azurewebsites.net/api/todo
-    ///     
-    /// Trouble Shooting
-    ///     Go to console management
-    ///     D:\home\LogFiles\Application\Functions 
+    /// REST API to send SMS text and receive SMS text answer from Twilio
     /// </summary>
     public class SmsRestApi : RestApiBaseClass
     {
-        public const AuthorizationLevel AUTH_LEVEL = AuthorizationLevel.Anonymous;
-        public const string SMS_ROUTE              = "sms";
-        static MQTTManager smsMqttManager          = null;
-        const string channel                       = "/sms-update";
+        public const AuthorizationLevel AUTH_LEVEL  = AuthorizationLevel.Anonymous;
+        public const string SMS_ROUTE               = "sms";
+        static MQTTManager smsMqttManager           = null;
+        const string channel                        = "/sms-update";
 
         static SmsRestApi()
         {
-            
-            string connectionString = "tcp://m15.cloudmqtt.com:10989";
-            string username = MQTT_USER;
-            string password = MQTT_PASSWORD;
+            string connectionString = MQTT_URL;
+            string username         = MQTT_USER;
+            string password         = MQTT_PASSWORD;
             var clientId            = MQTTManager.BuildClientId();
             
             if(smsMqttManager == null)
@@ -59,8 +44,17 @@ namespace AzureFunctions.RestApi
             }                
         }
 
-        // http://localhost:7071/api/sms/19787606031/Hello1
-        // https://azurefunctionsfred.azurewebsites.net/api/sms/19787606031/HelloFromAzure
+        /// <summary>
+        /// REST API to send SMS to a specific number
+        /// Call Syntax:
+        ///     http://localhost:7071/api/sms/19787606031/Hello1
+        ///     https://xxxx.azurewebsites.net/api/sms/19787606031/HelloFromAzure
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="log"></param>
+        /// <param name="to"></param>
+        /// <param name="text"></param>
+        /// <returns></returns>
         [FunctionName("SendSms")]
         public static IActionResult SendSms(
             [HttpTrigger(AUTH_LEVEL, METHOD_GET, Route = SMS_ROUTE+"/{to}/{text}")]
@@ -70,26 +64,39 @@ namespace AzureFunctions.RestApi
         {
             log.Info($"SendSms {to}, {text}");
             MessageResource msg = null;
-            try{
+            try {
                 msg = new TwilioManager().SendSms(to, text);
+                return new OkObjectResult(msg);
             }
             catch(System.Exception ex)
             {
-                // https://exceptionnotfound.net/asp-net-core-demystified-action-results/
-                return new OkObjectResult(ex.Message);
+                return new OkObjectResult(ex.Message); // https://exceptionnotfound.net/asp-net-core-demystified-action-results/
             }
-            return new OkObjectResult(msg);
         }
 
-        // http://localhost:7071/api/sms/receive
-        // https://azurefunctionsfred.azurewebsites.net/api/sms/receive
+        
+        /// <summary>
+        /// REST API WebHook to be called by the Twilio server,
+        /// when a text is sent to my Twillio number.
+        /// When a SMS text to my Twilio phone number is received, the
+        /// Twilio system is configured to call this REST API.
+        /// This REST API then broadcast via MQTT the text message.
+        /// The MQTT Client then analyse this notification has an user answer.
+        /// Call Syntax:
+        ///     http://localhost:7071/api/sms/receive
+        ///     https://xxxxxx.azurewebsites.net/api/sms/receive
+        /// The Request form contains a list of name/value related to the SMS.
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
         [FunctionName("ReceiveSms")]
         public static IActionResult ReceiveSms(
             [HttpTrigger(AUTH_LEVEL, METHOD_POST, Route = SMS_ROUTE+"/receive")]
             HttpRequest req, 
             TraceWriter log)
         {
-            log.Info($"ReceiveSms ");
+            log.Info($"ReceiveSms");
             var d = new Dictionary<string, string>();
             foreach(var e in req.Form)
             {

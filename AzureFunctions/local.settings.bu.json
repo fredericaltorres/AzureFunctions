@@ -2,11 +2,18 @@
   "IsEncrypted": false,
   "Values": {
     // "zureWebJobsStorage": "UseDevelopmentStorage=true",
-    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=azurefunctionsfred;AccountKey=ocuyA8MbAX2wntuJA==;EndpointSuffix=core.windows.net",
+    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=azurefunctionsfred;AccountKey=3Q9X2t15mIv4+35KX+u0fAE0qCD1xCygXLyKycJEzO9b0RCheBE7Xl1QIMvE9PgNNdzbDocuyA8MbAX2wntuJA==;EndpointSuffix=core.windows.net",
 
     "AzureWebJobsDashboard": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet", // InAzure: Not defined
-    "FUNCTIONS_EXTENSION_VERSION": "beta" // In Azure ~2
+    "FUNCTIONS_EXTENSION_VERSION": "beta", // In Azure ~2
+
+
+    "MQTT_URL": "tcp://m15.cloudmqtt.com:10989",
+    "MQTT_USER": "user2",
+    "MQTT_PASSWORD": "user0468950", // https://api.cloudmqtt.com/console/25015110/users
+
+    "TWILIO_AUTH_TOKEN": "1d5d8eb353646aa12646ec867de2bf22" // https://support.twilio.com/hc/en-us/articles/223136027-Auth-Tokens-and-How-to-Change-Them
   },
   "Host": {
     "CORS" :  "*" // Does not work in AZURE, see app settings
